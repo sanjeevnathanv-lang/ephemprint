@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#F4F8FC">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>EphemPrint — Zero-Trace Ephemeral P2P Exchange</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Fast Local Bundled Scripts -->
+  <script src="vendor/lucide.min.js"></script>
+  <script src="vendor/qrcode.min.js"></script>
+  <script src="vendor/jsQR.js"></script>
+  <script src="vendor/peerjs.min.js"></script>
+  <script>
+    if (typeof lucide === 'undefined') document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');
+    if (typeof qrcode === 'undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"><\/script>');
+    if (typeof jsQR === 'undefined') document.write('<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"><\/script>');
+    if (typeof Peer === 'undefined') document.write('<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>');
+  </script>
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient Background Waves & Glows -->
+  <div class="ambient-glow glow-blue"></div>
+  <div class="ambient-glow glow-green"></div>
+  <div class="ambient-waves"></div>
+
+  <div id="app" class="app-container">
+
+    <!-- ==============================================
+         GLOBAL HEADER
+         ============================================== -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-badge" id="btnHeaderLogo">
+          <div class="logo-icon-wrap">
+            <svg class="fingerprint-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+              <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+              <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+              <path d="M2 12a10 10 0 0 1 18-6"/>
+              <path d="M2 16h.01"/>
+              <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+              <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+              <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+              <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <div class="brand-title">Ephem<span class="text-blue">Print</span></div>
+            <div class="brand-sub">ZERO-TRACE P2P</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Status (Visible in chat on desktop) -->
+      <div id="headerSessionStatus" class="header-center hidden">
+        <div class="security-pill">
+          <span class="status-dot pulsing"></span>
+          <span id="activePeerName" class="peer-tag">Connected Peer</span>
+          <span class="badge-ram">E2EE RAM</span>
+        </div>
+      </div>
+
+      <!-- Right Controls -->
+      <div class="header-right">
+        <!-- Sound Toggle -->
+        <button id="btnSoundToggle" class="header-icon-pill" title="Toggle Sound FX" aria-label="Toggle Sound">
+          <i data-lucide="volume-2" id="soundIcon"></i>
+        </button>
+
+        <!-- Red Terminate Button (TOP RIGHT IN CHAT) -->
+        <button id="btnTerminateSession" class="terminate-pill-btn hidden" title="Shred and Destroy Session">
+          <i data-lucide="flame" class="flame-icon"></i>
+          <span>Terminate</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ==============================================
+         SCREEN 1: CHOICE SCREEN (Connect Privately.)
+         ============================================== -->
+    <section id="viewChoice" class="view-screen active">
+      <div class="screen-layout-card">
+
+        <!-- Top Privacy Banner -->
+        <div class="privacy-strip-card">
+          <div class="strip-left">
+            <div class="strip-shield-icon">
+              <i data-lucide="shield-check"></i>
+            </div>
+            <div class="strip-text">
+              <span class="strip-headline">Private connection <span class="dot-green">●</span></span>
+              <span class="strip-sub">Works across any network • No account required</span>
+            </div>
+          </div>
+          <i data-lucide="chevron-right" class="strip-arrow"></i>
+        </div>
+
+        <!-- Hero Section with Paired Devices Vector Graphic -->
+        <div class="choice-hero-layout">
+          <div class="hero-content">
+            <div class="hero-eyebrow">SECURE • TEMPORARY • SIMPLE</div>
+            <h1 class="hero-headline">Connect <span class="text-blue">Privately.</span></h1>
+            <p class="hero-desc">Pair devices instantly via encrypted QR handshake. Messages, files and camera snapshots exist only in device RAM.</p>
+          </div>
+
+          <div class="hero-graphic-wrap">
+            <svg class="hero-illustration-svg" viewBox="0 0 260 170" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background Ambient Glow -->
+              <ellipse cx="130" cy="85" rx="90" ry="50" fill="url(#heroGlow)" opacity="0.6"/>
+              <!-- Glowing Cyan Ring -->
+              <ellipse cx="140" cy="100" rx="75" ry="24" stroke="url(#ringGrad)" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.85"/>
+              
+              <!-- Left Smartphone (Blue Theme) -->
+              <g transform="translate(45, 10) rotate(-8 50 70)">
+                <rect x="0" y="0" width="70" height="130" rx="14" fill="#FFFFFF" stroke="#0070F3" stroke-width="2.5" filter="drop-shadow(0 10px 20px rgba(0, 112, 243, 0.2))"/>
+                <rect x="5" y="6" width="60" height="118" rx="10" fill="#F0F7FF"/>
+                <!-- Speaker Notch -->
+                <rect x="25" y="10" width="20" height="3" rx="1.5" fill="#94A3B8"/>
+                <!-- QR Code Grid on Phone -->
+                <rect x="15" y="24" width="40" height="40" rx="4" fill="#FFFFFF" stroke="#0070F3" stroke-width="1.2"/>
+                <rect x="20" y="29" width="10" height="10" fill="#0070F3"/>
+                <rect x="35" y="29" width="10" height="10" fill="#0070F3"/>
+                <rect x="20" y="44" width="10" height="10" fill="#0070F3"/>
+                <rect x="35" y="44" width="5" height="5" fill="#0070F3"/>
+                <!-- Chat lines -->
+                <rect x="15" y="74" width="40" height="8" rx="4" fill="#0070F3" opacity="0.8"/>
+                <rect x="15" y="88" width="28" height="6" rx="3" fill="#CBD5E1"/>
+                <rect x="15" y="98" width="34" height="6" rx="3" fill="#CBD5E1"/>
+              </g>
+
+              <!-- Central Floating Shield Badge -->
+              <g transform="translate(108, 62)">
+                <circle cx="16" cy="16" r="16" fill="#10B981" filter="drop-shadow(0 6px 14px rgba(16, 185, 129, 0.4))"/>
+                <path d="M16 8L10 11V16C10 20 16 23 16 23C16 23 22 20 22 16V11L16 8Z" fill="#FFFFFF"/>
+                <path d="M14 15V13C14 11.9 14.9 11 16 11C17.1 11 18 11.9 18 13V15" stroke="#10B981" stroke-width="1.5" stroke-linecap="round"/>
+                <rect x="13" y="15" width="6" height="4.5" rx="1" fill="#10B981"/>
+              </g>
+
+              <!-- Right Smartphone (Emerald Theme) -->
+              <g transform="translate(135, 12) rotate(10 50 70)">
+                <rect x="0" y="0" width="70" height="130" rx="14" fill="#FFFFFF" stroke="#10B981" stroke-width="2.5" filter="drop-shadow(0 10px 20px rgba(16, 185, 129, 0.2))"/>
+                <rect x="5" y="6" width="60" height="118" rx="10" fill="#ECFDF5"/>
+                <!-- Speaker Notch -->
+                <rect x="25" y="10" width="20" height="3" rx="1.5" fill="#94A3B8"/>
+                <!-- Scanner Viewfinder on Phone -->
+                <rect x="15" y="24" width="40" height="40" rx="4" fill="#FFFFFF" stroke="#10B981" stroke-width="1.2"/>
+                <!-- Neon Scanner brackets -->
+                <path d="M18 30V27H21M39 27H42V30M18 58V61H21M39 61H42V58" stroke="#10B981" stroke-width="2" stroke-linecap="round"/>
+                <line x1="17" y1="44" x2="43" y2="44" stroke="#10B981" stroke-width="1.8" stroke-dasharray="2 1"/>
+                <!-- Chat lines -->
+                <rect x="15" y="74" width="36" height="8" rx="4" fill="#10B981" opacity="0.8"/>
+                <rect x="15" y="88" width="30" height="6" rx="3" fill="#CBD5E1"/>
+                <rect x="15" y="98" width="38" height="6" rx="3" fill="#CBD5E1"/>
+              </g>
+
+              <defs>
+                <radialGradient id="heroGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#0070F3" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#0070F3"/>
+                  <stop offset="50%" stop-color="#10B981"/>
+                  <stop offset="100%" stop-color="#38BDF8"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 2 Action Cards -->
+        <div class="choice-cards-container">
+          <!-- CARD 1: SHOW MY QR -->
+          <div class="action-card card-show-qr" id="btnSelectShowQR">
+            <div class="card-top-row">
+              <div class="card-icon-box box-blue">
+                <i data-lucide="qr-code"></i>
+              </div>
+              <div class="card-badge badge-blue">
+                <i data-lucide="grid" class="w-3.5 h-3.5"></i>
+                <span>SHARE</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h2 class="card-heading">Show My QR</h2>
+              <p class="card-detail">Generate a secure QR code on this device for a partner to scan and connect.</p>
+            </div>
+            <button class="card-cta-btn btn-blue">
+              <i data-lucide="qr-code" class="w-4 h-4"></i>
+              <span>Generate Code</span>
+              <i data-lucide="arrow-right" class="cta-arrow"></i>
+            </button>
+          </div>
+
+          <!-- CARD 2: SCAN THE QR -->
+          <div class="action-card card-scan-qr" id="btnSelectScanQR">
+            <div class="card-top-row">
+              <div class="card-icon-box box-green">
+                <i data-lucide="camera"></i>
+              </div>
+              <div class="card-badge badge-green">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                <span>CONNECT</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <h2 class="card-heading">Scan the QR</h2>
+              <p class="card-detail">Open your camera and scan your partner's QR code to connect immediately.</p>
+            </div>
+            <button class="card-cta-btn btn-green">
+              <i data-lucide="camera" class="w-4 h-4"></i>
+              <span>Open Scanner</span>
+              <i data-lucide="arrow-right" class="cta-arrow"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Footer Privacy Note -->
+        <div class="choice-footer-note">
+          <div class="footer-divider-line"></div>
+          <div class="footer-note-text">
+            <i data-lucide="lock" class="footer-lock-icon"></i>
+            <span>Session data is temporary and cleared automatically when you disconnect.</span>
+          </div>
+          <div class="footer-divider-line"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 2A: SHOW QR CODE SCREEN (Host Device)
+         ============================================== -->
+    <section id="viewShowQR" class="view-screen">
+      <div class="screen-layout-card">
+
+        <div class="panel-header-nav">
+          <button id="btnBackFromShowQR" class="nav-back-pill">
+            <i data-lucide="arrow-left"></i>
+            <span>Back</span>
+          </button>
+          <span class="role-pill host-role">HOST DEVICE</span>
+        </div>
+
+        <div class="host-main-card">
+          <div class="card-avatar-circle">
+            <i data-lucide="qr-code"></i>
+          </div>
+          <h2 class="host-heading">Scan from Partner Device</h2>
+          <p class="host-sub">Point the partner’s camera at this QR code.</p>
+
+          <!-- QR Code Frame with Cyan Brackets -->
+          <div class="qr-frame-box">
+            <div class="bracket-tl"></div>
+            <div class="bracket-tr"></div>
+            <div class="bracket-bl"></div>
+            <div class="bracket-br"></div>
+            <div id="qrCodeContainer" class="qr-render-area"></div>
+          </div>
+
+          <!-- PIN Fallback Capsule -->
+          <div class="pin-copy-capsule">
+            <div class="pin-info-side">
+              <div class="pin-eyebrow">
+                <i data-lucide="key" class="w-3.5 h-3.5"></i>
+                <span>OR ENTER 6-DIGIT PIN</span>
+              </div>
+              <div id="sessionTokenDisplay" class="pin-value mono">------</div>
+            </div>
+            <button id="btnCopySessionLink" class="btn-copy-pin" title="Copy One-Time Link">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+              <span>Copy</span>
+            </button>
+          </div>
+
+          <!-- Connection Status Strip -->
+          <div class="connection-status-pill">
+            <div class="status-left">
+              <span class="dot-pulsing-green"></span>
+              <div class="status-text-block">
+                <div class="status-title" id="p2pHostStatus">Ready for connection.</div>
+                <div class="status-desc">Point partner device to scan.</div>
+              </div>
+            </div>
+            <i data-lucide="link-2" class="status-chain-icon"></i>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 2B: SCAN QR SCREEN (Camera Viewfinder)
+         ============================================== -->
+    <section id="viewScanQR" class="view-screen">
+      <div class="screen-layout-card">
+
+        <div class="panel-header-nav">
+          <button id="btnBackFromScanQR" class="nav-back-circle">
+            <i data-lucide="arrow-left"></i>
+          </button>
+          <div class="scanner-brand-center">
+            <div class="scanner-title">Scan QR Code</div>
+            <div class="scanner-sub">Scan your partner’s QR code to connect instantly.</div>
+          </div>
+          <span class="role-pill scanner-role">SCANNER</span>
+        </div>
+
+        <!-- Camera Viewfinder Stage -->
+        <div class="scanner-viewport-card">
+          <div class="camera-stream-wrapper">
+            <video id="scannerVideo" class="scanner-video-feed hidden" autoplay playsinline muted></video>
+            <canvas id="scannerCanvas" class="hidden"></canvas>
+            
+            <div class="scanner-hud-overlay">
+              <div class="hud-corners">
+                <div class="hud-bracket hud-tl"></div>
+                <div class="hud-bracket hud-tr"></div>
+                <div class="hud-bracket hud-bl"></div>
+                <div class="hud-bracket hud-br"></div>
+                <div class="hud-laser-line"></div>
+              </div>
+              
+              <div class="hud-bottom-bar">
+                <div class="hud-pill-tip">
+                  <i data-lucide="scan" class="w-4 h-4"></i>
+                  <span id="scannerStatusText">Align QR code in view...</span>
+                </div>
+                <button id="btnFlipScannerCam" class="btn-hud-flip" title="Flip Camera">
+                  <i data-lucide="refresh-cw"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manual PIN Entry -->
+        <div class="manual-pin-card">
+          <label for="inputManualPin" class="pin-input-label">OR TYPE 6-DIGIT EPHEMERAL PIN</label>
+          <div class="pin-input-group">
+            <div class="input-with-key">
+              <i data-lucide="key" class="field-key-icon"></i>
+              <input type="text" id="inputManualPin" placeholder="e.g. A8B2-C4" maxlength="12" class="field-pin-input mono" autocomplete="off" spellcheck="false">
+            </div>
+            <button id="btnConnectByPin" class="btn-connect-pin">
+              <span>Connect</span>
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================
+         SCREEN 3: ACTIVE TEMPORARY CHAT SESSION
+         ============================================== -->
+    <section id="viewChat" class="view-screen">
+      <div class="chat-layout-card">
+
+        <!-- Security Pill Strip -->
+        <div class="chat-security-strip">
+          <div class="sec-strip-left">
+            <i data-lucide="shield-check" class="sec-shield-icon"></i>
+            <div class="sec-text-col">
+              <span class="sec-bold">End-to-end encrypted WebRTC bridge.</span>
+              <span class="sec-muted">No server storage.</span>
+            </div>
+          </div>
+          <div class="sec-cipher-tag">
+            <span>AES-256</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+          </div>
+        </div>
+
+        <!-- Active Connected Device Bridge Card -->
+        <div class="bridge-summary-card">
+          <div class="bridge-badge-row">
+            <span class="bridge-badge"><span class="bridge-dot"></span> CONNECTED</span>
+          </div>
+          <div class="bridge-target-title">Target Session: <span id="chatTargetSession" class="mono text-blue">EPHEM-ACTIVE</span></div>
+          <div class="bridge-subtext">Your private session is ready.</div>
+
+          <!-- Phone & Laptop Device Pair Graphic -->
+          <div class="bridge-visual-row">
+            <div class="device-box">
+              <div class="device-phone-icon">
+                <i data-lucide="smartphone"></i>
+              </div>
+              <div class="device-sub-tag">Android</div>
+            </div>
+
+            <div class="bridge-link-line">
+              <div class="bridge-shield-badge">
+                <i data-lucide="shield-check"></i>
+              </div>
+            </div>
+
+            <div class="device-box">
+              <div class="device-laptop-icon">
+                <i data-lucide="laptop"></i>
+              </div>
+              <div class="device-sub-tag">Windows</div>
+            </div>
+          </div>
+
+          <!-- 3 Quick Nav Links -->
+          <div class="bridge-quick-nav">
+            <button type="button" class="bridge-nav-item" id="btnNavChat">
+              <div class="nav-icon-circle blue"><i data-lucide="message-square"></i></div>
+              <span>Secure Chat</span>
+            </button>
+            <label for="chatFileInput" class="bridge-nav-item">
+              <div class="nav-icon-circle cyan"><i data-lucide="file-text"></i></div>
+              <span>Share Files</span>
+            </label>
+            <button type="button" class="bridge-nav-item" id="btnNavCam">
+              <div class="nav-icon-circle green"><i data-lucide="camera"></i></div>
+              <span>Live Camera</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Date Separator -->
+        <div class="date-chip-wrapper">
+          <span class="date-chip">Today</span>
+        </div>
+
+        <!-- CHAT STREAM -->
+        <div id="chatMessagesStream" class="chat-messages-container">
+          <!-- Dynamic messages, file cards, notices stream here -->
+        </div>
+
+        <!-- CHAT BOTTOM DECK -->
+        <div class="chat-bottom-deck">
+          <!-- 3 Quick Action Pills: Share Files, Open Camera, Edit Document -->
+          <div class="quick-tools-strip">
+            <label for="chatFileInput" class="tool-action-pill pill-blue" title="Send Documents or Files">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-blue"></i>
+              <span>Share Files</span>
+              <input type="file" id="chatFileInput" multiple class="hidden">
+            </label>
+
+            <button type="button" id="btnOpenSnapModal" class="tool-action-pill pill-green" title="Capture and Send Photo">
+              <i data-lucide="camera" class="w-4 h-4 text-green"></i>
+              <span>Open Camera</span>
+            </button>
+
+            <button type="button" id="btnOpenNotesModal" class="tool-action-pill pill-purple" title="Collaborative Live Notes">
+              <i data-lucide="file-edit" class="w-4 h-4 text-purple"></i>
+              <span>Edit Document</span>
+            </button>
+          </div>
+
+          <!-- Message Form Deck -->
+          <form id="chatForm" class="chat-form-row">
+            <div class="input-capsule-deck">
+              <label for="chatFileInput" class="btn-paperclip-attach" title="Attach Document">
+                <i data-lucide="paperclip"></i>
+              </label>
+              <textarea id="chatInput" placeholder="Type an encrypted message..." rows="1"></textarea>
+              <button type="submit" id="btnSendChat" class="btn-send-message" title="Send (Enter)">
+                <i data-lucide="send"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================
+         MODAL 1: CAMERA SNAPSHOT CAPTURE
+         ============================================== -->
+    <div id="modalCamera" class="modal-backdrop hidden">
+      <div class="modal-card camera-modal-card">
+        <div class="modal-header-row">
+          <div class="modal-header-title">
+            <i data-lucide="camera" class="text-green"></i>
+            <span>Instant Camera Snap</span>
+          </div>
+          <button id="btnCloseCameraModal" class="icon-btn-close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <div class="camera-modal-stage">
+          <video id="modalCameraVideo" autoplay playsinline muted class="camera-stream-video"></video>
+          <canvas id="modalCameraCanvas" class="hidden"></canvas>
+          
+          <!-- Snap Preview Overlay -->
+          <div id="modalSnapPreviewOverlay" class="snap-preview-layer hidden">
+            <img id="modalSnapPreviewImg" src="" alt="Captured Snap" class="snap-result-img">
+            <div class="snap-result-actions">
+              <button id="btnRetakeModalSnap" class="btn-secondary">
+                <i data-lucide="refresh-ccw"></i>
+                <span>Retake</span>
+              </button>
+              <button id="btnSendModalSnap" class="btn-primary">
+                <i data-lucide="send"></i>
+                <span>Send to Peer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="camera-modal-controls">
+          <button id="btnFlipModalCamera" class="cam-btn-circle" title="Flip Lens">
+            <i data-lucide="switch-camera"></i>
+          </button>
+
+          <!-- Shutter Button -->
+          <button id="btnTriggerModalShutter" class="cam-shutter-btn" title="Snap Photo">
+            <div class="shutter-inner"></div>
+          </button>
+
+          <!-- Native Device Camera Trigger for Android -->
+          <label for="nativeCameraFileInput" class="cam-btn-circle" title="Open Native Phone Camera">
+            <i data-lucide="aperture"></i>
+            <input type="file" id="nativeCameraFileInput" accept="image/*" capture="environment" class="hidden">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         MODAL 2: LIVE COLLABORATIVE DOCUMENT
+         ============================================== -->
+    <div id="modalNotes" class="modal-backdrop hidden">
+      <div class="modal-card notes-modal-card">
+        <div class="modal-header-row">
+          <div class="modal-header-title">
+            <i data-lucide="file-edit" class="text-blue"></i>
+            <input type="text" id="docTitleInput" value="shared_ephemeral_notes.md" class="doc-title-input" title="Click to rename">
+          </div>
+          <button id="btnCloseNotesModal" class="icon-btn-close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="notes-toolbar">
+          <div class="notes-formatting-group">
+            <button type="button" class="fmt-btn" data-fmt="bold" title="Bold"><b>B</b></button>
+            <button type="button" class="fmt-btn" data-fmt="italic" title="Italic"><i>I</i></button>
+            <button type="button" class="fmt-btn" data-fmt="heading" title="Heading">H1</button>
+            <button type="button" class="fmt-btn" data-fmt="checklist" title="Checklist"><i data-lucide="check-square" class="w-3.5 h-3.5"></i></button>
+            <button type="button" class="fmt-btn" data-fmt="code" title="Code"><i data-lucide="code" class="w-3.5 h-3.5"></i></button>
+          </div>
+
+          <div class="notes-actions-group">
+            <button id="btnDownloadDoc" class="btn-action-sm">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Download .md</span>
+            </button>
+            <button id="btnClearDoc" class="btn-action-sm text-red">
+              <i data-lucide="eraser" class="w-3.5 h-3.5"></i>
+              <span>Clear</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Document Editor Area -->
+        <div class="notes-editor-box">
+          <textarea id="liveDocumentEditor" placeholder="# Shared Ephemeral Document&#10;&#10;Edits synchronize live across connected devices. Real-time WebRTC buffer." spellcheck="false"></textarea>
+        </div>
+
+        <div class="notes-footer-bar">
+          <span>Synced with peer in RAM</span>
+          <span id="docCharCount">0 characters</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         MODAL 3: TERMINATION CONFIRMATION
+         ============================================== -->
+    <div id="terminateModal" class="modal-backdrop hidden">
+      <div class="modal-card burn-modal-card">
+        <div class="burn-icon-aura">
+          <i data-lucide="flame" class="burn-modal-icon"></i>
+        </div>
+        
+        <h2 class="modal-title">Terminate Session?</h2>
+        <p class="modal-desc">
+          This will immediately burn the cryptographic keys, close the WebRTC bridge, and wipe all messages, documents, and files from <strong>both devices</strong>.
+        </p>
+
+        <!-- Slide to Burn -->
+        <div class="slide-to-burn-wrapper">
+          <div class="slide-track" id="slideTrack">
+            <div class="slide-thumb" id="slideThumb">
+              <i data-lucide="chevrons-right"></i>
+            </div>
+            <span class="slide-text">Slide to Shred Session</span>
+          </div>
+        </div>
+
+        <div class="modal-actions-fallback">
+          <button id="btnCancelTerminate" class="btn-secondary w-full">Cancel</button>
+          <button id="btnConfirmTerminateFast" class="btn-burn-fast">Immediate Burn Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PURGE ANIMATION OVERLAY -->
+    <div id="purgeScreen" class="purge-screen hidden">
+      <div class="purge-content">
+        <div class="purge-glitch-text">PURGING EPHEMERAL SESSION</div>
+        <div class="shredder-visual"></div>
+        <div class="purge-terminal mono">
+          <div>> Severing WebRTC data connection... [OK]</div>
+          <div>> Zero-filling memory buffers... [OK]</div>
+          <div>> Peer notified of destruction... [OK]</div>
+          <div class="text-emerald">> Zero traces remaining.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+  </div> <!-- /app-container -->
+
+  <script src="app.js"></script>
+</body>
+</html>

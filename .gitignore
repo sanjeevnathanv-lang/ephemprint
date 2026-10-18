@@ -1,0 +1,25 @@
+# OS & Editor
+.DS_Store
+Thumbs.db
+*.tmp
+*.log
+.vscode/
+.idea/
+
+# Android Build Artifacts & Intermediate Cache
+android_project/obj/
+android_project/classes.dex
+android_project/*.unaligned.apk
+android_project/*.aligned.apk
+
+# Local SDK & Environment
+tools/
+.agent/
+.agents/
+skills-lock.json
+
+# Development Scratch Tests & Screencaps
+test_*.html
+test_*.js
+screen_*.png
+screenshot*.png

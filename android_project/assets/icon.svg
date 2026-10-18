@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#070a11"/>
+    </radialGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded plate -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGlow)"/>
+  <rect width="504" height="504" x="4" y="4" rx="124" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="2"/>
+
+  <!-- Glowing Fingerprint / QR Hybrid Mark -->
+  <g transform="translate(106, 106)" filter="url(#glow)">
+    <!-- Fingerprint Arcs -->
+    <path d="M150 20 C60 20 20 80 20 150 C20 230 60 280 150 280 C240 280 280 230 280 150 C280 80 240 20 150 20" 
+          fill="none" stroke="url(#cyanGrad)" stroke-width="16" stroke-linecap="round"/>
+    <path d="M150 60 C90 60 60 100 60 150 C60 210 90 240 150 240 C210 240 240 210 240 150 C240 100 210 60 150 60" 
+          fill="none" stroke="url(#cyanGrad)" stroke-width="14" stroke-linecap="round"/>
+    <path d="M150 100 C115 100 100 125 100 150 C100 185 115 200 150 200 C185 200 200 185 200 150 C200 125 185 100 150 100" 
+          fill="none" stroke="url(#cyanGrad)" stroke-width="12" stroke-linecap="round"/>
+    <!-- Center Core Point -->
+    <circle cx="150" cy="150" r="14" fill="#38bdf8"/>
+  </g>
+</svg>
